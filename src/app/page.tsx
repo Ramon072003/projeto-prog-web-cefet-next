@@ -4,7 +4,9 @@ import Button from "@/components/button/button";
 import TitleSection from "@/components/title-section/titleSection";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MockDataContext } from "@/context/mockDataContext";
-import { useContext } from "react";
+import { useContext, useState } from "react";
+import { useRouter } from "next/navigation";
+import DashboardLayout from "@/components/DashboardLayout";
 import {
   Table,
   TableBody,
@@ -20,6 +22,8 @@ import {
   Plus,
   ArrowUpRight,
   ArrowDownRight,
+  Edit,
+  Trash2,
 } from "lucide-react";
 
 const convertType = (text: string) => {
@@ -30,7 +34,26 @@ const convertType = (text: string) => {
 };
 
 export default function Home() {
-  const { total, financial } = useContext(MockDataContext);
+  const { total, financial, deleteTransaction } = useContext(MockDataContext);
+  const router = useRouter();
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+
+  const handleEdit = (id: string) => {
+    router.push(`/edit-transaction?id=${id}`);
+  };
+
+  const handleDeleteClick = (id: string) => {
+    setDeleteConfirm(id);
+  };
+
+  const confirmDelete = (id: string) => {
+    deleteTransaction(id);
+    setDeleteConfirm(null);
+  };
+
+  const cancelDelete = () => {
+    setDeleteConfirm(null);
+  };
 
   // Calcular receitas e despesas
   const receitas = financial
@@ -54,7 +77,7 @@ export default function Home() {
     }, 0);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-8">
+    <DashboardLayout>
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex flex-row justify-between items-center mb-8">
@@ -173,12 +196,15 @@ export default function Home() {
                     <TableHead className="py-4 px-6 text-slate-700 font-semibold text-right">
                       Data
                     </TableHead>
+                    <TableHead className="py-4 px-6 text-slate-700 font-semibold text-center">
+                      Ações
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {financial.map((data, idx) => (
                     <TableRow
-                      key={idx}
+                      key={data.id || idx}
                       className="hover:bg-slate-50 transition-colors border-b border-slate-100"
                     >
                       <TableCell className="py-4 px-6">
@@ -204,7 +230,12 @@ export default function Home() {
                             : "text-red-600"
                         }`}
                       >
-                        {data?.value}
+                        {typeof data?.value === "number"
+                          ? data.value.toLocaleString("pt-BR", {
+                              style: "currency",
+                              currency: "BRL",
+                            })
+                          : data?.value}
                       </TableCell>
                       <TableCell className="py-4 px-6 text-slate-700">
                         {data?.description}
@@ -216,7 +247,46 @@ export default function Home() {
                               month: "2-digit",
                               year: "numeric",
                             })
-                          : data.date}
+                          : new Date(data.date).toLocaleDateString("pt-BR", {
+                              day: "2-digit",
+                              month: "2-digit",
+                              year: "numeric",
+                            })}
+                      </TableCell>
+                      <TableCell className="py-4 px-6">
+                        <div className="flex items-center justify-center gap-2">
+                          <button
+                            onClick={() => handleEdit(data.id)}
+                            className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                            title="Editar transação"
+                          >
+                            <Edit size={16} />
+                          </button>
+                          {deleteConfirm === data.id ? (
+                            <div className="flex gap-1">
+                              <button
+                                onClick={() => confirmDelete(data.id)}
+                                className="px-2 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600 transition-colors"
+                              >
+                                Sim
+                              </button>
+                              <button
+                                onClick={cancelDelete}
+                                className="px-2 py-1 bg-gray-500 text-white text-xs rounded hover:bg-gray-600 transition-colors"
+                              >
+                                Não
+                              </button>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => handleDeleteClick(data.id)}
+                              className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                              title="Excluir transação"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          )}
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -226,6 +296,6 @@ export default function Home() {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </DashboardLayout>
   );
 }

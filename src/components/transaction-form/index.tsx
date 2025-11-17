@@ -21,7 +21,7 @@ interface TransactionFormData {
 }
 
 export default function TransactionForm() {
-  const { setFinancial } = useContext(MockDataContext);
+  const { addTransaction } = useContext(MockDataContext);
   const router = useRouter();
 
   const [formData, setFormData] = useState<TransactionFormData>({
@@ -57,7 +57,13 @@ export default function TransactionForm() {
     }
 
     console.log("Dados do formulário:", formData);
-    setFinancial((prev) => [...prev, formData as unknown as any]);
+
+    addTransaction({
+      type: formData.type,
+      value: parseFloat(formData.value),
+      date: new Date(formData.date),
+      description: formData.description,
+    });
 
     setFormData({
       type: "",

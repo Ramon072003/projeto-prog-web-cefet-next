@@ -1,21 +1,39 @@
 "use client";
 
-import React, { createContext, useEffect, useMemo, useState } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useMemo,
+} from "react";
+import { useAuth } from "./authContext";
 
 type DataFinancialType = {
+  id: string;
+  userId: string;
   type: "income" | "expense";
   value: number;
   date: any;
   description: string;
 };
 
-type MockDataContextType = {
+interface MockDataContextType {
   total: number;
   revenue: number;
   expense: number;
   financial: DataFinancialType[];
   setFinancial: React.Dispatch<React.SetStateAction<DataFinancialType[]>>;
-};
+  addTransaction: (
+    transaction: Omit<DataFinancialType, "id" | "userId">
+  ) => void;
+  updateTransaction: (
+    id: string,
+    transaction: Omit<DataFinancialType, "id" | "userId">
+  ) => void;
+  deleteTransaction: (id: string) => void;
+  getTransactionById: (id: string) => DataFinancialType | undefined;
+}
 
 const defaultData: MockDataContextType = {
   total: 0,
@@ -23,11 +41,16 @@ const defaultData: MockDataContextType = {
   expense: 0,
   financial: [],
   setFinancial: (_: React.SetStateAction<DataFinancialType[]>) => {},
+  addTransaction: () => {},
+  updateTransaction: () => {},
+  deleteTransaction: () => {},
+  getTransactionById: () => undefined,
 };
 
 export const MockDataContext = createContext<MockDataContextType>(defaultData);
 
 export function MockDataProvider({ children }: any) {
+  const { user } = useAuth();
   const [financial, setFinancial] = useState<DataFinancialType[]>([]);
   const [isClient, setIsClient] = useState(false);
 
@@ -38,29 +61,37 @@ export function MockDataProvider({ children }: any) {
 
   // Load data from localStorage on mount
   useEffect(() => {
-    if (!isClient) return;
+    if (!isClient || !user) return;
 
     try {
-      const stored = localStorage.getItem("financial");
+      const storageKey = `financial_${user.id}`;
+      const stored = localStorage.getItem(storageKey);
       if (stored) {
         const parsed = JSON.parse(stored) as any[];
-        setFinancial(parsed.map((f) => ({ ...f, date: new Date(f.date) })));
+        const migratedData = parsed.map((item, index) => ({
+          ...item,
+          id: item.id || `migration-${Date.now()}-${index}`,
+          userId: user.id,
+          date: new Date(item.date),
+        }));
+        setFinancial(migratedData);
       }
     } catch (error) {
       console.error("Error loading financial data:", error);
     }
-  }, [isClient]);
+  }, [isClient, user]);
 
   // Save data to localStorage whenever it changes
   useEffect(() => {
-    if (!isClient) return;
+    if (!isClient || !user) return;
 
     try {
-      localStorage.setItem("financial", JSON.stringify(financial));
+      const storageKey = `financial_${user.id}`;
+      localStorage.setItem(storageKey, JSON.stringify(financial));
     } catch (error) {
       console.error("Error saving financial data:", error);
     }
-  }, [financial, isClient]);
+  }, [financial, isClient, user]);
 
   const revenue = useMemo(
     () =>
@@ -80,6 +111,51 @@ export function MockDataProvider({ children }: any) {
 
   const total = revenue - expense;
 
+  // Função para gerar um ID único
+  const generateId = () => {
+    return Date.now().toString() + Math.random().toString(36).substr(2, 9);
+  };
+
+  // Função para adicionar transação
+  const addTransaction = (
+    transaction: Omit<DataFinancialType, "id" | "userId">
+  ) => {
+    if (!user) return;
+
+    const newTransaction: DataFinancialType = {
+      ...transaction,
+      id: generateId(),
+      userId: user.id,
+    };
+    setFinancial((prev) => [...prev, newTransaction]);
+  };
+
+  // Função para atualizar transação
+  const updateTransaction = (
+    id: string,
+    updatedTransaction: Omit<DataFinancialType, "id" | "userId">
+  ) => {
+    if (!user) return;
+
+    setFinancial((prev) =>
+      prev.map((transaction) =>
+        transaction.id === id
+          ? { ...updatedTransaction, id, userId: user.id }
+          : transaction
+      )
+    );
+  };
+
+  // Função para excluir transação
+  const deleteTransaction = (id: string) => {
+    setFinancial((prev) => prev.filter((transaction) => transaction.id !== id));
+  };
+
+  // Função para buscar transação por ID
+  const getTransactionById = (id: string): DataFinancialType | undefined => {
+    return financial.find((transaction) => transaction.id === id);
+  };
+
   return (
     <MockDataContext.Provider
       value={{
@@ -88,6 +164,10 @@ export function MockDataProvider({ children }: any) {
         expense,
         financial,
         setFinancial,
+        addTransaction,
+        updateTransaction,
+        deleteTransaction,
+        getTransactionById,
       }}
     >
       {children}

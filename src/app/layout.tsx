@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { AuthProvider } from "@/context/authContext";
 import { MockDataProvider } from "@/context/mockDataContext";
 import { MdOutlineDashboard } from "react-icons/md";
 import { FaMoneyBills } from "react-icons/fa6";
-import Sidebar, { PagesTypeSidebar } from "@/components/sidebar";
+import LayoutContent from "./LayoutContent";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -30,13 +31,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-br">
-      <body className={`ntialiased`}>
-        <div className="flex flex-row w-full min-h-full">
-          <Sidebar pages={pages} />
-          <div className="w-dvw min-h-[100vh] p-[4.5rem] bg-[#f9fafb]">
-            <MockDataProvider>{children}</MockDataProvider>
-          </div>
-        </div>
+      <body className={`antialiased`}>
+        <AuthProvider>
+          <MockDataProvider>{children}</MockDataProvider>
+        </AuthProvider>
       </body>
     </html>
   );
