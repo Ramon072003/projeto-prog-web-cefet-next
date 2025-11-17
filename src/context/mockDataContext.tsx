@@ -1,12 +1,6 @@
 "use client";
 
-import React, {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  useMemo,
-} from "react";
+import React, { createContext, useState, useEffect, useMemo } from "react";
 import { useAuth } from "./authContext";
 
 type DataFinancialType = {
@@ -14,8 +8,9 @@ type DataFinancialType = {
   userId: string;
   type: "income" | "expense";
   value: number;
-  date: any;
+  date: Date;
   description: string;
+  category: string;
 };
 
 interface MockDataContextType {
@@ -40,7 +35,7 @@ const defaultData: MockDataContextType = {
   revenue: 0,
   expense: 0,
   financial: [],
-  setFinancial: (_: React.SetStateAction<DataFinancialType[]>) => {},
+  setFinancial: () => {},
   addTransaction: () => {},
   updateTransaction: () => {},
   deleteTransaction: () => {},
@@ -49,7 +44,7 @@ const defaultData: MockDataContextType = {
 
 export const MockDataContext = createContext<MockDataContextType>(defaultData);
 
-export function MockDataProvider({ children }: any) {
+export function MockDataProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
   const [financial, setFinancial] = useState<DataFinancialType[]>([]);
   const [isClient, setIsClient] = useState(false);
@@ -67,7 +62,7 @@ export function MockDataProvider({ children }: any) {
       const storageKey = `financial_${user.id}`;
       const stored = localStorage.getItem(storageKey);
       if (stored) {
-        const parsed = JSON.parse(stored) as any[];
+        const parsed = JSON.parse(stored) as DataFinancialType[];
         const migratedData = parsed.map((item, index) => ({
           ...item,
           id: item.id || `migration-${Date.now()}-${index}`,

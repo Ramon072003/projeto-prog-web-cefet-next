@@ -1,7 +1,6 @@
 "use client";
 
 import { useContext, useState } from "react";
-import Button from "@/components/button/button";
 import { MockDataContext } from "@/context/mockDataContext";
 import {
   TrendingUp,
@@ -63,6 +62,7 @@ export default function TransactionForm() {
       value: parseFloat(formData.value),
       date: new Date(formData.date),
       description: formData.description,
+      category: formData.type === "income" ? "Receita" : "Despesa",
     });
 
     setFormData({

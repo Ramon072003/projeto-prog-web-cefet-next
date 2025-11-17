@@ -65,7 +65,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       // Verificar se já existe um usuário com este email
       const users = JSON.parse(localStorage.getItem("users") || "[]");
-      const existingUser = users.find((u: any) => u.email === email);
+      const existingUser = users.find((u: User) => u.email === email);
 
       if (existingUser) {
         return false; // Email já existe
@@ -99,7 +99,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Buscar usuário no localStorage
       const users = JSON.parse(localStorage.getItem("users") || "[]");
       const foundUser = users.find(
-        (u: any) => u.email === email && u.password === btoa(password)
+        (u: User & { password: string }) =>
+          u.email === email && u.password === btoa(password)
       );
 
       if (foundUser) {

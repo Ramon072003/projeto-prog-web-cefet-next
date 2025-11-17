@@ -1,5 +1,4 @@
 import { render, screen, fireEvent } from "@testing-library/react";
-import { MockDataProvider } from "@/context/mockDataContext";
 import { AuthProvider } from "@/context/authContext";
 import Home from "@/app/page";
 import { useRouter } from "next/navigation";

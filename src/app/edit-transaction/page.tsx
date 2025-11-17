@@ -1,6 +1,6 @@
 "use client";
 
-import { useContext, useState, useEffect } from "react";
+import { useContext, useState, useEffect, Suspense } from "react";
 import Button from "@/components/button/button";
 import { MockDataContext } from "@/context/mockDataContext";
 import DashboardLayout from "@/components/DashboardLayout";
@@ -23,7 +23,7 @@ interface TransactionFormData {
   description: string;
 }
 
-export default function EditTransaction() {
+function EditTransactionContent() {
   const { getTransactionById, updateTransaction } = useContext(MockDataContext);
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -93,6 +93,7 @@ export default function EditTransaction() {
       value: parseFloat(formData.value),
       date: new Date(formData.date),
       description: formData.description,
+      category: formData.type === "income" ? "Receita" : "Despesa",
     });
 
     router.push("/");
@@ -269,5 +270,13 @@ export default function EditTransaction() {
         </div>
       </div>
     </DashboardLayout>
+  );
+}
+
+export default function EditTransaction() {
+  return (
+    <Suspense fallback={<div>Carregando...</div>}>
+      <EditTransactionContent />
+    </Suspense>
   );
 }

@@ -1,7 +1,6 @@
 "use client";
 
 import Button from "@/components/button/button";
-import TitleSection from "@/components/title-section/titleSection";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MockDataContext } from "@/context/mockDataContext";
 import { useContext, useState } from "react";

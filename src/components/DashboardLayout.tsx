@@ -11,12 +11,12 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 const pages: PagesTypeSidebar[] = [
   {
     label: "Dashboard",
-    icon: <MdOutlineDashboard />,
+    icon: MdOutlineDashboard,
     link: "/",
   },
   {
     label: "Nova Transação",
-    icon: <FaMoneyBills />,
+    icon: FaMoneyBills,
     link: "/new-transaction",
   },
 ];

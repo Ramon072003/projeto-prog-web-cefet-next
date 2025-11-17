@@ -1,14 +1,13 @@
 "use client";
 
 import { FaMoneyBills } from "react-icons/fa6";
-import { MdOutlineDashboard } from "react-icons/md";
 import { ChevronRight } from "lucide-react";
 import { usePathname } from "next/navigation";
 
 export type PagesTypeSidebar = {
   label: string;
   link: string;
-  icon: any;
+  icon: React.ComponentType<{ className?: string }>;
 };
 
 type SidebarProps = {
@@ -61,7 +60,7 @@ export default function Sidebar({ pages }: SidebarProps) {
                       ${isActive ? "scale-110" : "group-hover:scale-110"}
                     `}
                     >
-                      {page.icon}
+                      <page.icon />
                     </div>
                     <span className="font-medium text-base">{page.label}</span>
                   </div>
